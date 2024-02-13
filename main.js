@@ -10,6 +10,31 @@ async function start() {
 
 start()
 
+async function petsArea() {
+  const petsPromise = await fetch("https://learnwebcode.github.io/bootcamp-pet-data/pets.json")
+  const petsData = await petsPromise.json()
+
+  petsData.forEach(pet => {
+    const clone = template.content.cloneNode(true)
+
+    clone.querySelector(".pet-card").dataset.species = pet.species
+    clone.querySelector("h3").textContent = pet.name
+    clone.querySelector(".pet-description").textContent = pet.description
+    clone.querySelector(".pet-age").textContent = createAgeText(pet.birthYear)
+
+    if (!pet.photo) pet.photo = "images/fallback.jpg"
+    clone.querySelector(".pet-card-photo img").src = pet.photo
+
+    clone.querySelector(".pet-card-photo img").alt = `A ${pet.species} name ${pet.name}`
+
+    wrapper.appendChild(clone)
+  });
+
+  document.querySelector(".list-of-pets").appendChild(wrapper)
+}
+
+petsArea()
+
 function createAgeText(birthYear) {
   const currentYear = new Date().getFullYear()
   const age = currentYear - birthYear
@@ -20,26 +45,12 @@ function createAgeText(birthYear) {
   return `${age} years old`
 }
 
-async function petsArea() {
-  const petsPromise = await fetch("https://learnwebcode.github.io/bootcamp-pet-data/pets.json")
-  const petsData = await petsPromise.json()
-  petsData.forEach(pet => {
-    const clone = template.content.cloneNode(true)
-    clone.querySelector("h3").textContent = pet.name
-    clone.querySelector(".pet-description").textContent = pet.description
-    clone.querySelector(".pet-age").textContent = createAgeText(pet.birthYear)
-    if (!pet.photo) pet.photo = "images/fallback.jpg"
-    clone.querySelector(".pet-card-photo img").src = pet.photo
-    clone.querySelector(".pet-card-photo img").alt = `A ${pet.species} name ${pet.name}`
-    wrapper.appendChild(clone)
-  });
-  document.querySelector(".list-of-pets").appendChild(wrapper)
-}
-
-petsArea()
-
 // pet filter button code
 const allButtons = document.querySelectorAll(".pet-filter button")
+
+allButtons.forEach(el => {
+  el.addEventListener("click", handleButtonClick)
+})
 
 function handleButtonClick(e) {
   // remove active from any and all buttons
@@ -49,8 +60,12 @@ function handleButtonClick(e) {
   e.target.classList.add("active")
 
   // actually filter the pet down below
+  const currentFilter = e.target.dataset.filter
+  document.querySelectorAll(".pet-card").forEach(el => {
+    if (currentFilter == el.dataset.species || currentFilter == "all") {
+      el.style.display = "grid"
+    } else {
+      el.style.display = "none"
+    }
+  })
 }
-
-allButtons.forEach(el => {
-  el.addEventListener("click", handleButtonClick)
-})
